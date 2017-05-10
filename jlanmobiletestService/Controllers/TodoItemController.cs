@@ -15,7 +15,7 @@ namespace jlanmobiletestService.Controllers
         {
             base.Initialize(controllerContext);
             jlanmobiletestContext context = new jlanmobiletestContext();
-            DomainManager = new EntityDomainManager<TodoItem>(context, Request, false);
+            DomainManager = new EntityDomainManager<TodoItem>(context, Request, true);
         }
 
         // GET tables/TodoItem

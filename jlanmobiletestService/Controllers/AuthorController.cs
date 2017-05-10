@@ -6,6 +6,8 @@ using System.Web.Http.OData;
 using Microsoft.Azure.Mobile.Server;
 using jlanmobiletestService.DataObjects;
 using jlanmobiletestService.Models;
+using System.Net;
+using System.Data.Entity;
 
 namespace jlanmobiletestService.Controllers
 {
@@ -15,7 +17,7 @@ namespace jlanmobiletestService.Controllers
         {
             base.Initialize(controllerContext);
             jlanmobiletestContext context = new jlanmobiletestContext();
-            DomainManager = new EntityDomainManager<Author>(context, Request, false);
+            DomainManager = new EntityDomainManager<Author>(context, Request, true);
         }
 
         // GET tables/Author
@@ -44,9 +46,25 @@ namespace jlanmobiletestService.Controllers
         }
 
         // DELETE tables/Author/48D68C86-6EA6-4C25-AA33-223FC9A27959
-        public Task DeleteAuthor(string id)
+        public Task<int> DeleteAuthor(string id)
         {
-            return DeleteAsync(id);
+            jlanmobiletestContext context = new jlanmobiletestContext();
+
+            var author = context.Authors
+                .Include(x => x.TodoItems)
+                .SingleOrDefault(x => x.Id == id);
+
+            if (author == null)
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+
+            author.Deleted = true;
+
+            foreach (var todo in author.TodoItems)
+            {
+                todo.Deleted = true;
+            }
+
+            return context.SaveChangesAsync();
         }
     }
 }
