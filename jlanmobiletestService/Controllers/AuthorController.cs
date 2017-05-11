@@ -8,10 +8,12 @@ using jlanmobiletestService.DataObjects;
 using jlanmobiletestService.Models;
 using System.Net;
 using System.Data.Entity;
+using System.Web.Http.OData.Query;
+using System.Collections.Generic;
 
 namespace jlanmobiletestService.Controllers
 {
-    public class AuthorController : TableController<Author>
+    public class AuthorController : TableControllerBase<Author>
     {
         protected override void Initialize(HttpControllerContext controllerContext)
         {
@@ -46,25 +48,9 @@ namespace jlanmobiletestService.Controllers
         }
 
         // DELETE tables/Author/48D68C86-6EA6-4C25-AA33-223FC9A27959
-        public Task<int> DeleteAuthor(string id)
+        public Task DeleteAuthorAsync(string id)
         {
-            jlanmobiletestContext context = new jlanmobiletestContext();
-
-            var author = context.Authors
-                .Include(x => x.TodoItems)
-                .SingleOrDefault(x => x.Id == id);
-
-            if (author == null)
-                throw new HttpResponseException(HttpStatusCode.NotFound);
-
-            author.Deleted = true;
-
-            foreach (var todo in author.TodoItems)
-            {
-                todo.Deleted = true;
-            }
-
-            return context.SaveChangesAsync();
+            return DeleteAsync(id, x => x.TodoItems);
         }
     }
 }
